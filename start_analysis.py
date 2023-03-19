@@ -35,7 +35,7 @@ class StartАnalysis(BaseMethods):
         if self.analysis_type == "AnalysisDataAPHistory":
             if self.name_options == "download":
                 from download_data import DownloadАrh
-                year_min_config, year_max_config = self.params["year_min"], self.params["year_max"]
+                year_min_config, year_max_config, = self.params["year_min"], self.params["year_max"]
                 print(f"Enter the year start with which the archive will be downloaded"
                       f"({year_min_config}-{year_max_config})\n")
                 year_min_input = input()
