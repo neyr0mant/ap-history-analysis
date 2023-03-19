@@ -34,7 +34,7 @@ class StartАnalysis(BaseMethods):
     def start_script(self):
         if self.analysis_type == "AnalysisDataAPHistory":
             if self.name_options == "download":
-                from download_data import DownloadАrh
+                from download_data import DownloadAndUnpackАrh
                 year_min_config, year_max_config, = self.params["year_min"], self.params["year_max"]
                 print(f"Enter the year start with which the archive will be downloaded"
                       f"({year_min_config}-{year_max_config})\n")
@@ -60,7 +60,7 @@ class StartАnalysis(BaseMethods):
                     year_max_config = year_max_input_int
                 print(f"Start script: analysis type: {self.analysis_type} options: {self.name_options}\n "
                       f"Start download archive {year_min_input} - {year_max_config}")
-                DownloadАrh(year_min=year_min_config, year_max=year_max_config)
+                DownloadAndUnpackАrh(year_min=year_min_config, year_max=year_max_config)
 
 
 

@@ -6,7 +6,7 @@ from start_analysis import StartАnalysis
 from progress.bar import IncrementalBar
 import tarfile
 
-class DownloadАrh(StartАnalysis):
+class DownloadAndUnpackАrh(StartАnalysis):
 
     def __init__(self, year_min: int = 1620, year_max: int = 2023, download_scr: bool = True, unpack_scr: bool = True):
         self.num_for_month = {1: 'January', 2: 'February', 3: 'March', 4: 'April', 5: 'May', 6: 'June', 7: 'July',
@@ -16,16 +16,22 @@ class DownloadАrh(StartАnalysis):
         self.list_year = range(self.year_min, self.year_max + 1)
         self.path_data_download = "download_src_data"
         self.path_data_unpack = "unpack_src_data"
-        if not os.path.exists(self.path_data_download):
-            os.mkdir(self.path_data_download)
-        if not os.path.exists(self.path_data_unpack):
-            os.mkdir(self.path_data_unpack)
-        if download_scr:
-            self.download_data()
-            print(f"Download {self.year_min} - {self.year_max} complete")
+        self.assert_dir(self.path_data_download)
+        self.assert_dir(self.path_data_unpack)
+        # if download_scr:
+        #     self.download_data()
+        #     print(f"Download {self.year_min} - {self.year_max} complete")
         if unpack_scr:
             self.unpack_data()
             print(f"Unpack {self.year_min} - {self.year_max} complete")
+
+    def assert_dir(self, type_dir="download_src_data", create=True):
+        if create:
+            if not os.path.exists(type_dir):
+                os.mkdir(type_dir)
+        else:
+            if not os.path.exists(type_dir):
+                self.wait_err_time(f"Dir {type_dir} not found!!!")
 
     @staticmethod
     def get_soup_data(link):
@@ -94,37 +100,4 @@ class DownloadАrh(StartАnalysis):
                 for name_arh, err in unpack_err.items():
                     file.write(f"{name_arh}: {err}\n")
 
-
-
-    # def get_list_link_arh(self, year_min, year_max):
-    #     html_data_title = "https://www.ncei.noaa.gov/data/global-marine/archive/"
-    #     html = requests.get(html_data_title).content
-    #     list_name_arh = []
-    #     soup_obj = BeautifulSoup(html, "lxml")
-    #     for tr in soup_obj.table.findAll("tr"):
-    #         if tr.td:
-    #             href = tr.td.a.get("href")
-    #             if href:
-    #                 name_arh_int = self.get_int_for_str(href.split(".")[0])
-    #                 if name_arh_int:
-    #                     cur_year = int(str(name_arh_int)[:4])
-    #                     if year_min <= cur_year <= year_max:
-    #                         list_name_arh.append(href)
-    #     return [f"https://www.ncei.noaa.gov/data/global-marine/archive/{name_arh}" for name_arh in list_name_arh]
-
-
-# import tarfile
-# for name_arh in list_name_arh:
-#     path_dir = os.path.join("data_pressure", name_arh)
-#     if not os.path.exists(path_dir):
-#         data = requests.get(get_link(name_arh)).content
-#         with open(path_dir, 'wb') as file_:
-#                 file_.write(data)
-#         path_tar = os.path.join("data_pressure", name_arh)
-#         year = name_arh.split(".")[0]
-#         path_cvs = os.path.join("data_cvs", year)
-#         os.mkdir(os.path.join("data_cvs", year))
-#         with tarfile.open(path_tar) as tar:
-#             tar.extractall(path=path_cvs)
-
-DownloadАrh(1700, 1800)
+DownloadAndUnpackАrh(1800, 1810)
