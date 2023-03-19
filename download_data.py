@@ -92,5 +92,3 @@ class DownloadАrh(StartАnalysis):
 #         os.mkdir(os.path.join("data_cvs", year))
 #         with tarfile.open(path_tar) as tar:
 #             tar.extractall(path=path_cvs)
-
-DownloadАrh(1705, 1706)
