@@ -32,7 +32,7 @@ class StartАnalysis(BaseMethods):
 
 
     def start_script(self):
-        if self.analysis_type == "TypeAnalysisDataAPHistory":
+        if self.analysis_type == "AnalysisDataAPHistory":
             if self.name_options == "download":
                 from download_data import DownloadАrh
                 year_min_config, year_max_config = self.params["year_min"], self.params["year_max"]
@@ -59,7 +59,7 @@ class StartАnalysis(BaseMethods):
                         self.wait_err_time("Not a number is entered as the end year of archive loading!!!")
                     year_max_config = year_max_input_int
                 print(f"Start script: analysis type: {self.analysis_type} options: {self.name_options}\n "
-                      f"Start download archive {year_max_input} - {year_max_config}")
+                      f"Start download archive {year_min_input} - {year_max_config}")
                 DownloadАrh(year_min=year_min_config, year_max=year_max_config)
 
 

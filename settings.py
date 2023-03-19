@@ -1,6 +1,6 @@
 
 config_dict = {
-    1: {"TypeAnalysisDataAPHistory":
+    1: {"AnalysisDataAPHistory":
             {"options":
                  {"download":
                       {"year_min": 1662, "year_max": 2023},

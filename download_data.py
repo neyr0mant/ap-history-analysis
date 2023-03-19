@@ -45,7 +45,9 @@ class DownloadАrh(StartАnalysis):
                     with open(os.path.join(path_year, f"{month_int}_{month_name}.tar.gz"), 'wb') as file:
                         file.write(data)
             bar_month.finish()
-            print(f"Year {year} year uploaded, errors: {count_err}")
+            print(f"Year {year} uploaded, errors: {count_err}")
+            if count_err == 12:
+                os.rmdir(path_year)
             count_err = 0
         if err_download:
             with open("log_err.txt", "w+") as file:
@@ -90,3 +92,5 @@ class DownloadАrh(StartАnalysis):
 #         os.mkdir(os.path.join("data_cvs", year))
 #         with tarfile.open(path_tar) as tar:
 #             tar.extractall(path=path_cvs)
+
+DownloadАrh(1705, 1706)
