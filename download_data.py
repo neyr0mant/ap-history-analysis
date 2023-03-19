@@ -20,9 +20,9 @@ class DownloadАrh(StartАnalysis):
             os.mkdir(self.path_data_download)
         if not os.path.exists(self.path_data_unpack):
             os.mkdir(self.path_data_unpack)
-        # if download_scr:
-        #     self.download_data()
-        #     print(f"Download {self.year_min} - {self.year_max} complete")
+        if download_scr:
+            self.download_data()
+            print(f"Download {self.year_min} - {self.year_max} complete")
         if unpack_scr:
             self.unpack_data()
             print(f"Unpack {self.year_min} - {self.year_max} complete")
