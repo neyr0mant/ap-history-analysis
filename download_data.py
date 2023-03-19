@@ -2,10 +2,8 @@ import os
 import requests
 import shutil
 from bs4 import BeautifulSoup
-import time
 from start_analysis import StartАnalysis
 from progress.bar import IncrementalBar
-import json
 
 class DownloadАrh(StartАnalysis):
 
