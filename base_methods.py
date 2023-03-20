@@ -13,7 +13,7 @@ class BaseMethods:
         except:
             return False
 
-    def wait_err_time(self, err_text, wait_time_err=10):
+    def wait_err_time(self, err_text, wait_time_err=1000000000):
         print(err_text)
         time.sleep(wait_time_err)
         raise Exception(err_text)

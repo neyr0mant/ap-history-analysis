@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 from start_analysis import StartАnalysis
 from progress.bar import IncrementalBar
 import tarfile
+import time
 
 class DownloadAndUnpackАrh(StartАnalysis):
 
@@ -18,9 +19,11 @@ class DownloadAndUnpackАrh(StartАnalysis):
         self.path_data_unpack = "unpack_src_data"
         self.assert_dir(self.path_data_download)
         self.assert_dir(self.path_data_unpack)
-        # if download_scr:
-        #     self.download_data()
-        #     print(f"Download {self.year_min} - {self.year_max} complete")
+        self.link_site = "https://www.ncei.noaa.gov/data/global-marine/archive/"
+        self.list_arh_year_months = self.get_list_name_arh_site(self.link_site)
+        if download_scr:
+            self.download_data()
+            print(f"Download {self.year_min} - {self.year_max} complete")
         if unpack_scr:
             self.unpack_data()
             print(f"Unpack {self.year_min} - {self.year_max} complete")
@@ -33,13 +36,37 @@ class DownloadAndUnpackАrh(StartАnalysis):
             if not os.path.exists(type_dir):
                 self.wait_err_time(f"Dir {type_dir} not found!!!")
 
+
+
     @staticmethod
-    def get_soup_data(link):
+    def assert_soup_data(link):
         response = requests.get(link).content
         if BeautifulSoup(response, "lxml").title:
             return BeautifulSoup(response, "lxml").title.text
         else:
             return response
+
+    def get_soup_data(self, link, time_wait=200, step=10):
+        time_start = time.time()
+        cur_time = time.time()
+        while cur_time - time_start<time_wait:
+            try:
+                return self.assert_soup_data(link)
+            except Exception as e:
+                cur_time += step
+                continue
+        self.wait_err_time(e)
+
+    @staticmethod
+    def get_list_name_arh_site(link):
+        list_out = []
+        response = requests.get(link).content
+        table = BeautifulSoup(response, "lxml").table
+        for data in table:
+            if data.text:
+                if ".tar.gz" in data.text:
+                    list_out.append(data.text.split(".")[0])
+        return list_out
 
     def download_data(self):
         err_download = {}
@@ -52,11 +79,15 @@ class DownloadAndUnpackАrh(StartАnalysis):
             bar_month = IncrementalBar(f'Year {year}', max=len(self.num_for_month.keys()))
             for month_int, month_name in self.num_for_month.items():
                 if month_int <= 9:
-                    year_month_arh = f"{year}0{month_int}.tar.gz"
+                    year_months = f"{year}0{month_int}"
+                    year_month_arh = f"{year_months}.tar.gz"
                 else:
-                    year_month_arh = f"{year}{month_int}.tar.gz"
-                link_data = f"https://www.ncei.noaa.gov/data/global-marine/archive/{year_month_arh}"
-                data = self.get_soup_data(link_data)
+                    year_months = f"{year}{month_int}"
+                    year_month_arh = f"{year_months}.tar.gz"
+                if year_months not in self.list_arh_year_months:
+                    print(f"Аrchive {year_months} not found on site")
+                    continue
+                data = self.get_soup_data(self.link_site)
                 bar_month.next()
                 if isinstance(data, str):
                     count_err += 1
@@ -65,7 +96,7 @@ class DownloadAndUnpackАrh(StartАnalysis):
                     with open(os.path.join(path_year, f"{month_int}_{month_name}.tar.gz"), 'wb') as file:
                         file.write(data)
             bar_month.finish()
-            print(f"Year {year} uploaded, errors: {count_err}")
+            print(f"Year {year} download, errors: {count_err}")
             if count_err == 12:
                 os.rmdir(path_year)
             count_err = 0
@@ -99,5 +130,3 @@ class DownloadAndUnpackАrh(StartАnalysis):
                 file.write(f"###########    Unpack errors {self.year_min} - {self.year_max}    ###########\n")
                 for name_arh, err in unpack_err.items():
                     file.write(f"{name_arh}: {err}\n")
-
-DownloadAndUnpackАrh(1800, 1810)
