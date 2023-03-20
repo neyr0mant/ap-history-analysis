@@ -11,7 +11,7 @@ class DownloadAndUnpackАrh(StartАnalysis):
 
     def __init__(self, year_min: int = 1620, year_max: int = 2023, download_scr: bool = True, unpack_scr: bool = True):
         self.num_for_month = {1: 'January', 2: 'February', 3: 'March', 4: 'April', 5: 'May', 6: 'June', 7: 'July',
-                              8: 'August', 9: 'September', 10: 'October', 11: 'November', 12: 'December'}
+                             8: 'August', 9: 'September', 10: 'October', 11: 'November', 12: 'December'}
         self.year_min = year_min
         self.year_max = year_max
         self.list_year = range(self.year_min, self.year_max + 1)
@@ -21,14 +21,6 @@ class DownloadAndUnpackАrh(StartАnalysis):
         self.assert_dir(self.path_data_unpack)
         self.link_site = "https://www.ncei.noaa.gov/data/global-marine/archive/"
         self.list_arh_year_months = self.get_list_name_arh_site(self.link_site)
-        for idx, year_months in enumerate(self.list_arh_year_months):
-            if str(self.year_min) in year_months:
-                self.list_arh_year_months = self.list_arh_year_months[idx:]
-                break
-        for idx, year_months in enumerate(self.list_arh_year_months):
-            if str(self.year_max) in year_months:
-                self.list_arh_year_months = self.list_arh_year_months[:idx]
-                break
         if download_scr:
             self.download_data()
             print(f"Download {self.year_min} - {self.year_max} complete")
@@ -63,7 +55,7 @@ class DownloadAndUnpackАrh(StartАnalysis):
             except Exception as e:
                 cur_time += step
                 continue
-        self.wait_err_time(e)
+        self.wait_err_time(f"Error for link {link}:\n{e}")
 
     @staticmethod
     def get_list_name_arh_site(link):
@@ -77,21 +69,39 @@ class DownloadAndUnpackАrh(StartАnalysis):
         return list_out
 
     def download_data(self):
+        err_download = {}
+        count_err = 0
         for year in self.list_year:
             path_year = os.path.join(self.path_data_download, str(year))
             if os.path.exists(path_year):
                 shutil.rmtree(path_year)
             os.mkdir(path_year)
             bar_month = IncrementalBar(f'Year {year}', max=len(self.num_for_month.keys()))
-            for year_month_arh in self.list_arh_year_months:
-                month_int = int(year_month_arh[4:])
-                month_name = self.num_for_month[month_int]
-                data = self.get_soup_data(self.link_site+month_name)
-                bar_month.next()
+            for month_int, month_name in self.num_for_month.items():
+                if month_int <= 9:
+                    year_months = f"{year}0{month_int}"
+                    year_month_arh = f"{year}0{month_int}.tar.gz"
+                else:
+                    year_months = f"{year}{month_int}"
+                    year_month_arh = f"{year}{month_int}.tar.gz"
+                if year_months not in self.list_arh_year_months:
+                    count_err += 1
+                    continue
+                data = self.get_soup_data(self.link_site+year_month_arh)
                 with open(os.path.join(path_year, f"{month_int}_{month_name}.tar.gz"), 'wb') as file:
                     file.write(data)
             bar_month.finish()
-            print(f"Year {year} download")
+            if count_err == 12:
+                print(f"Not fount arhive for year {year}")
+                os.rmdir(path_year)
+            else:
+                print(f"Year {year} download, count months download: {12-count_err}")
+            count_err = 0
+        if err_download:
+            with open("log_err_download.txt", "w+") as file:
+                file.write(f"###########    Download errors {self.year_min} - {self.year_max}    ###########\n")
+                for name_arh, err in err_download.items():
+                    file.write(f"{name_arh}: {err}\n")
 
     def unpack_data(self):
         unpack_err = {}
