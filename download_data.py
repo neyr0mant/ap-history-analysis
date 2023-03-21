@@ -36,26 +36,24 @@ class DownloadAndUnpackАrh(StartАnalysis):
             if not os.path.exists(type_dir):
                 self.wait_err_time(f"Dir {type_dir} not found!!!")
 
-
-
-    @staticmethod
-    def assert_soup_data(link):
-        response = requests.get(link).content
-        if BeautifulSoup(response, "lxml").title:
-            return BeautifulSoup(response, "lxml").title.text
-        else:
-            return response
-
-    def get_soup_data(self, link, time_wait=200, step=10):
+    def wait_soup_data(self, link, time_wait=200, step=10):
         time_start = time.time()
         cur_time = time.time()
-        while cur_time - time_start<time_wait:
+        error = False
+        while cur_time - time_start < time_wait:
             try:
-                return self.assert_soup_data(link)
+                response = requests.get(link).content
+                if BeautifulSoup(response, "lxml").title:
+                    return BeautifulSoup(response, "lxml").title.text
+                else:
+                    return response
             except Exception as e:
-                cur_time += step
+                error = e
+                time.sleep(step)
+                cur_time = time.time()
                 continue
-        self.wait_err_time(f"Error for link {link}:\n{e}")
+        if error:
+            self.wait_err_time(f"Error for link {link}:\n{error}")
 
     @staticmethod
     def get_list_name_arh_site(link):
@@ -87,9 +85,14 @@ class DownloadAndUnpackАrh(StartАnalysis):
                 if year_months not in self.list_arh_year_months:
                     count_err += 1
                     continue
-                data = self.get_soup_data(self.link_site+year_month_arh)
+                data = self.wait_soup_data(self.link_site+year_month_arh)
+                if isinstance(data, str):
+                    count_err += 1
+                    err_download.update({year_month_arh: data})
+                    continue
                 with open(os.path.join(path_year, f"{month_int}_{month_name}.tar.gz"), 'wb') as file:
                     file.write(data)
+                bar_month.next()
             bar_month.finish()
             if count_err == 12:
                 print(f"Not fount arhive for year {year}")
@@ -128,4 +131,4 @@ class DownloadAndUnpackАrh(StartАnalysis):
                 for name_arh, err in unpack_err.items():
                     file.write(f"{name_arh}: {err}\n")
 
-DownloadAndUnpackАrh(1662, 2023)
+# DownloadAndUnpackАrh(1662, 2023)

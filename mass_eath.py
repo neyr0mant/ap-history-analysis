@@ -124,5 +124,15 @@ str_y = "January, February, March, April, May, June, July, August, September, Oc
 for idx, name in enumerate(str_y.split(","), start=1):
     print(name.replace(" ", ""))
     manths = int()
-    year_for_num.update({name.replace(" ", ""):idx})
+    year_for_num.update({idx:name.replace(" ", "")})
 print(year_for_num)
+print(int("01"))
+
+try:
+    int1 = input()
+    int2 = input()
+    int(int1)/int(int2)
+except Exception as e:
+    print(e)
+
+
